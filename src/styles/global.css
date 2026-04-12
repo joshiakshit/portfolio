@@ -25,20 +25,23 @@ html {
   -moz-osx-font-smoothing: auto;
   text-rendering: geometricPrecision;
   cursor: default;
-  overflow: hidden;
+  height: 100%;
   overscroll-behavior: none;
 }
 
 body {
-  min-height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: pan-x;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 max(24px, calc(50vw - 240px));
+  overscroll-behavior: none;
+}
+
+body.no-scroll {
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-x;
 }
 
 body::before {
@@ -63,11 +66,10 @@ body::after {
   left: -80px;
   width: 340px;
   height: 340px;
-  background: radial-gradient(ellipse at center, rgba(20, 40, 80, 0.22) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, rgba(20,40,80,0.22) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
-
 
 main {
   position: relative;
@@ -89,6 +91,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 footer nav ul {
