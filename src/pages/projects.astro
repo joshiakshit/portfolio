@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+
+const projects = [
+  {
+    name: 'gu-portal',
+    desc: 'university attendance + timetable scraper',
+    url: 'https://github.com/joshiakshit/gu-portal',
+    external: true,
+  },
+  {
+    name: 'monopoly',
+    desc: 'full-stack java spring boot board game',
+    url: 'https://github.com/joshiakshit/monopoly',
+    external: true,
+  },
+  {
+    name: 'authenticator',
+    desc: 'totp + encrypted messaging, java',
+    url: 'https://github.com/harshjoshi/authenticator',
+    external: true,
+  },
+];
+---
+
+<Base title="projects" description="things akshit has built">
+  <div class="projects-header">
+    <a href="/" class="back">← back</a>
+    <h1>projects</h1>
+  </div>
+
+  <ul class="project-list">
+    {projects.map((p) => (
+      <li>
+        <a
+          href={p.url}
+          target={p.external ? '_blank' : undefined}
+          rel={p.external ? 'noopener noreferrer' : undefined}
+        >
+          <span class="proj-name">{p.name}</span>
+          <span class="proj-desc">{p.desc}</span>
+          <span class="proj-arrow">{p.external ? '↗' : '→'}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Base>
