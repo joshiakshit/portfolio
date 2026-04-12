@@ -25,12 +25,16 @@ html {
   -moz-osx-font-smoothing: auto;
   text-rendering: geometricPrecision;
   cursor: default;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
   min-height: 100vh;
   max-height: 100vh;
   overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-x;
   display: flex;
   flex-direction: column;
   align-items: center;
