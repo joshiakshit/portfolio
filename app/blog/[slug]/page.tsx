@@ -27,15 +27,25 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
     notFound();
   }
   return (
-    <main>
-      <div className="projects-header">
-        <Link href="/blog" className="back">← blog</Link>
-        <h1>{post!.meta.title}</h1>
-      </div>
-      <p className="post-date">{post!.meta.date}</p>
-      <article className="post-body">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{post!.content}</ReactMarkdown>
-      </article>
-    </main>
+    <>
+      <main>
+        <div className="projects-header">
+          <Link href="/blog" className="back">← blog</Link>
+          <h1>{post!.meta.title}</h1>
+        </div>
+        <p className="post-date">{post!.meta.date}</p>
+        <article className="post-body">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post!.content}</ReactMarkdown>
+        </article>
+      </main>
+      <footer>
+        <nav>
+          <ul>
+            <li><a href="https://github.com/joshiakshit" target="_blank" rel="noopener noreferrer">github</a></li>
+            <li><a href="https://linkedin.com/in/joshiakshit" target="_blank" rel="noopener noreferrer">linkedin</a></li>
+          </ul>
+        </nav>
+      </footer>
+    </>
   );
 }

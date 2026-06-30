@@ -24,7 +24,7 @@ export default function Home() {
             <li><a href="https://linkedin.com/in/joshiakshit" target="_blank" rel="noopener noreferrer">linkedin</a></li>
           </ul>
         </nav>
-        <span className="footnote">built tiny</span>
+        <span className="footnote">~172kb</span>
       </footer>
     </>
   );

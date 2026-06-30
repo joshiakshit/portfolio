@@ -3,6 +3,7 @@ export type Repo = {
   description: string | null;
   html_url: string;
   updated_at: string;
+  language: string | null;
 };
 
 export async function getRepos(): Promise<Repo[]> {

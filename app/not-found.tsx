@@ -7,7 +7,10 @@ export default function NotFound() {
         <Link href="/" className="back">← back</Link>
         <h1>404</h1>
       </div>
-      <p className="tagline">that page doesn&apos;t exist.</p>
+      <div className="terminal-block">
+        <p className="tagline">$ cd /that/page</p>
+        <p className="tagline">bash: cd: /that/page: No such file or directory</p>
+      </div>
     </main>
   );
 }
