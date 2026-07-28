@@ -5,6 +5,9 @@ export default function Home() {
   return (
     <>
       <LandingLock />
+      <header>
+        <Link href="/login"><img src="./profile.svg" alt="Profile" /></Link>
+      </header>
       <main>
         <h1>ash<span className="cursor" /></h1>
         <p className="tagline">builds stuff</p>
