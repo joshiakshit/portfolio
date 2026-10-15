@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { getAllPosts } from '@/lib/posts';
-import SocialLinks from '../social-links';
 
 export const metadata = { title: 'blog', description: 'writing by ash' };
 
@@ -25,8 +24,13 @@ export default function Blog() {
           ))}
         </ul>
       </main>
-      <footer className="site-footer">
-        <nav aria-label="Social links"><SocialLinks /></nav>
+      <footer>
+        <nav>
+          <ul>
+            <li><a href="https://github.com/joshiakshit" target="_blank" rel="noopener noreferrer">github</a></li>
+            <li><a href="https://linkedin.com/in/joshiakshit" target="_blank" rel="noopener noreferrer">linkedin</a></li>
+          </ul>
+        </nav>
       </footer>
     </>
   );

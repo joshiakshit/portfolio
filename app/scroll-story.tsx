@@ -18,7 +18,7 @@ const motionQuery = '(prefers-reduced-motion: reduce)';
 function subscribeMotion(callback: () => void) { const query=window.matchMedia(motionQuery); query.addEventListener('change',callback); return () => query.removeEventListener('change',callback); }
 
 const Intro = memo(function Intro() {
-  return <><h1>Hey, I am Akshit<span>.</span></h1><p className="intro-lead">I like computers.<br />{' '}And making things with them.</p><p className="story-description">CS hobbyist, programmer, and serial tinkerer. This is where I keep the things I build and the things I figure out.</p></>;
+  return <><h1>Hey, I’m ash<span>.</span></h1><p className="intro-lead">I like computers.<br />{' '}And making things with them.</p><p className="story-description">CS hobbyist, programmer, and serial tinkerer. This is where I keep the things I build and the things I figure out.</p></>;
 });
 const ProjectCopy = memo(function ProjectCopy({ index }: { index: number }) {
   const project=projects[index];
@@ -49,8 +49,7 @@ export default function ScrollStory() {
     const bounds=story.current.getBoundingClientRect();
     const height=story.current.firstElementChild?.getBoundingClientRect().height ?? innerHeight;
     const stickyTop=parseFloat(getComputedStyle(story.current.firstElementChild!).top)||0;
-    const targetProgress=index===0?0:Math.min(projects.length,index+.1);
-    window.scrollTo({top:window.scrollY+bounds.top-stickyTop+(bounds.height-height)*targetProgress/projects.length, behavior:reducedMotion?'instant':'smooth'});
+    window.scrollTo({top:window.scrollY+bounds.top-stickyTop+(bounds.height-height)*index/projects.length, behavior:reducedMotion?'instant':'smooth'});
   }
 
   const stage=Math.min(projects.length,Math.floor(progress));

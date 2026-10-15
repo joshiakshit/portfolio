@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { getAllPosts } from '@/lib/posts';
 import ScrollStory from './scroll-story';
 import HomeHeader from './home-header';
-import SocialLinks from './social-links';
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 3);
@@ -22,7 +21,7 @@ export default function Home() {
 
           <div className="colophon"><span aria-hidden="true">↳</span><p>This site is a project, too.<br /><span>I’ll keep adding to it as I go.</span></p><a className="text-link" href="https://github.com/joshiakshit/portfolio" target="_blank" rel="noopener noreferrer">view source ↗</a></div>
       </main>
-      <footer className="site-footer"><span>© {new Date().getFullYear()} ash</span><nav aria-label="Footer navigation"><Link href="/projects">projects ↗</Link><Link href="/blog">blog ↗</Link><SocialLinks /></nav></footer>
+      <footer className="site-footer"><span>© {new Date().getFullYear()} ash</span><nav aria-label="Footer navigation"><Link href="/projects">projects ↗</Link><Link href="/blog">blog ↗</Link><a href="https://github.com/joshiakshit" target="_blank" rel="noopener noreferrer">github ↗</a><a href="https://linkedin.com/in/joshiakshit" target="_blank" rel="noopener noreferrer">linkedin ↗</a></nav></footer>
     </div>
   );
 }

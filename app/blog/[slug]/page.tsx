@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getAllPosts, getPost } from '@/lib/posts';
-import SocialLinks from '../../social-links';
 
 export function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }));
@@ -39,8 +38,13 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post!.content}</ReactMarkdown>
         </article>
       </main>
-      <footer className="site-footer">
-        <nav aria-label="Social links"><SocialLinks /></nav>
+      <footer>
+        <nav>
+          <ul>
+            <li><a href="https://github.com/joshiakshit" target="_blank" rel="noopener noreferrer">github</a></li>
+            <li><a href="https://linkedin.com/in/joshiakshit" target="_blank" rel="noopener noreferrer">linkedin</a></li>
+          </ul>
+        </nav>
       </footer>
     </>
   );
