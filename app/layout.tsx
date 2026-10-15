@@ -9,14 +9,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://joshiakshit.live'),
+  metadataBase: new URL('https://joshiakshit.me'),
   title: { default: 'ash — code, projects & notes', template: '%s — ash' },
   description: 'A computer science hobbyist’s corner of the internet. Side projects, small tools, and notes on what I’m learning.',
   authors: [{ name: 'ash' }],
   openGraph: {
     title: 'ash',
     description: 'A computer science hobbyist’s corner of the internet. Side projects, small tools, and notes on what I’m learning.',
-    url: 'https://joshiakshit.live',
+    url: 'https://joshiakshit.me',
     type: 'website',
   },
   icons: { icon: '/favicon.svg' },

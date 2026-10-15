@@ -29,7 +29,7 @@ export default function WireArtifact({ progress }: { progress: number }) {
     let lastX=0,lastY=0,lastMove=0,pointerId:number|null=null;
     let invalidate=()=>{};
     const mobile=matchMedia('(max-width: 600px)');
-    let particles=artifactParticles.filter((_,index)=>index%(mobile.matches?4:2)===0);
+    let particles=artifactParticles.filter((_,index)=>index%(mobile.matches?12:4)===0);
     let resetTween:{pitch:number;yaw:number;start:number}|null=null;
     reset.current=()=>{
       velocityX=0;velocityY=0;
@@ -42,15 +42,15 @@ export default function WireArtifact({ progress }: { progress: number }) {
     };
     const resize=new ResizeObserver(entries=>{
       width=entries[0].contentRect.width;height=entries[0].contentRect.height;
-      const ratio=Math.min(devicePixelRatio,mobile.matches?1.5:2);
+      const ratio=Math.min(devicePixelRatio,mobile.matches?1:2);
       element.width=width*ratio;element.height=height*ratio;context.setTransform(ratio,0,0,ratio,0,0);invalidate();
     });
     resize.observe(element);
     let viewportWidth=innerWidth,viewportHeight=innerHeight;
     const resizeDust=()=>{
-      particles=artifactParticles.filter((_,index)=>index%(mobile.matches?4:2)===0);
+      particles=artifactParticles.filter((_,index)=>index%(mobile.matches?12:4)===0);
       viewportWidth=innerWidth;viewportHeight=innerHeight;
-      const ratio=Math.min(devicePixelRatio,mobile.matches?1.5:2);
+      const ratio=Math.min(devicePixelRatio,mobile.matches?1:2);
       dust.width=viewportWidth*ratio;dust.height=viewportHeight*ratio;
       dustContext.setTransform(ratio,0,0,ratio,0,0);invalidate();
     };
@@ -111,7 +111,7 @@ export default function WireArtifact({ progress }: { progress: number }) {
       const globalRotation=rotation(pitch,yaw,0);
       const spins=rings.map(ring=>rotation(0,0,activeTime*ring.speed*5.5));
       const coreRotation=rotation(0,activeTime*.3,activeTime*.13);
-      const globeScale=Math.min(width/385,height/385);
+      const globeScale=Math.min(width/320,height/320);
       const sketchScale=Math.min(width/(width<450?420:460),height/510);
       const scale=stage===0?globeScale+(sketchScale-globeScale)*t:sketchScale;
       context.save();context.translate(width/2,height/2);context.scale(scale,scale);
@@ -157,10 +157,12 @@ export default function WireArtifact({ progress }: { progress: number }) {
         const size=Math.max(.35,particle.radius*(.65+brightness*.55)*(.85+(globeScale-.85)*gather));
         dustContext.beginPath();dustContext.arc(x,y,size*.5,0,TAU);dustContext.fill();
         if(particle.radius>2.4 && gather>.2){
-          const glint=dustContext.createRadialGradient(x,y,0,x,y,size*2.2);
-          glint.addColorStop(0,colors[particle.color]);glint.addColorStop(1,'rgba(0,0,0,0)');
-          dustContext.globalAlpha*=.18;dustContext.fillStyle=glint;
-          dustContext.fillRect(x-size*2.2,y-size*2.2,size*4.4,size*4.4);
+          if(!mobile.matches){
+            const glint=dustContext.createRadialGradient(x,y,0,x,y,size*2.2);
+            glint.addColorStop(0,colors[particle.color]);glint.addColorStop(1,'rgba(0,0,0,0)');
+            dustContext.globalAlpha*=.18;dustContext.fillStyle=glint;
+            dustContext.fillRect(x-size*2.2,y-size*2.2,size*4.4,size*4.4);
+          }
         }
       });
       if(t>0 && (stage>0 || t>.2)){
@@ -186,7 +188,7 @@ export default function WireArtifact({ progress }: { progress: number }) {
       }
       context.restore();
     };
-    const loop=createAnimationLoop(element,draw,()=>mobile.matches?30:45);
+    const loop=createAnimationLoop(element,draw,()=>mobile.matches?24:45);
     invalidate=loop.invalidate;
     invalidateRef.current=()=>{invalidate();};
     return()=>{loop.destroy();invalidateRef.current=()=>{};resize.disconnect();window.removeEventListener('resize',resizeDust);element.removeEventListener('pointerdown',down);element.removeEventListener('pointermove',move);element.removeEventListener('pointerup',up);element.removeEventListener('pointercancel',up);element.removeEventListener('lostpointercapture',up);element.removeEventListener('keydown',key);};
