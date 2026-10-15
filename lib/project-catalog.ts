@@ -1,0 +1,9 @@
+export const featuredProjects = [
+  { id: 'auth-service', name: 'Auth Service', repo: 'auth-service', language: 'Python', type: 'Authentication backend', description: 'A standalone FastAPI service for sign-in, access and refresh tokens, email verification, and password resets.', stack: ['Python', 'FastAPI', 'PostgreSQL'] },
+  { id: 'electronic-warfare', name: 'Electronic Warfare', repo: 'electronic-warfare', language: 'Java', type: 'Adaptive scanner library', description: 'Choosing which frequency band to observe next. A Java library exploring uncertainty, periodic signals, and limited receiver bandwidth.', stack: ['Java', 'Online learning', 'Signal processing'] },
+  { id: 'axis', name: 'Axis', repo: 'axis', language: 'Kotlin', type: 'Android app', description: 'Attendance, timetables, and QR check-in for Galgotias students. A quieter, offline-friendly way to navigate university.', stack: ['Kotlin', 'Jetpack Compose', 'Cloudflare Workers'] },
+  { id: 'music', name: 'Music', repo: 'music', language: 'JavaScript', type: 'Discord bot', description: 'A Discord bot for finding music, queueing tracks, and listening together in a voice channel.', stack: ['JavaScript', 'Discord', 'YouTube'] },
+  { id: 'impromptu', name: 'Impromptu', repo: 'impromptu', language: 'TypeScript', type: 'Browser app', description: 'Random topics, a timer, and a little space to practice speaking. Recordings stay on your device.', stack: ['TypeScript', 'Browser audio', 'Local recordings'] },
+  { id: 'table-stakes', name: 'Table Stakes', repo: 'poker', language: 'JavaScript', type: 'Web app', description: 'A chip tracker for poker nights. Less mental arithmetic, more Texas Hold’em and Teen Patti.', stack: ['JavaScript', 'Poker', 'Shared tables'] },
+] as const;
+export type ProjectId = typeof featuredProjects[number]['id'];

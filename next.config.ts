@@ -15,6 +15,7 @@ const csp = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   async headers() {
     return [{
       source: '/:path*',
