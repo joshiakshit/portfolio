@@ -30,7 +30,7 @@ export function buildSampleTable(pathEl: SVGPathElement, step = 10): PathSampleT
   return { totalLen, L, X, Y };
 }
 
-export function lookupPath(table: PathSampleTable, axis: 'X' | 'Y', target: number) {
+export function lookupPath(table: PathSampleTable, axis: 'X' | 'Y' | 'L', target: number) {
   const arr = table[axis];
   const { L, X, Y } = table;
   const last = arr.length - 1;

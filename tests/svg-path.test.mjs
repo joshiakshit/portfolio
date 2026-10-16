@@ -33,6 +33,11 @@ test('buildSampleTable and lookupPath interpolate accurately along X and Y axes'
   assert.ok(Math.abs(byX.x - 75) < 1e-4);
   assert.ok(Math.abs(byX.y - 112.5) < 1e-4);
 
+  const byL = lookupPath(table, 'L', 40);
+  assert.ok(Math.abs(byL.len - 40) < 1e-4);
+  assert.ok(Math.abs(byL.x - 80) < 1e-4);
+  assert.ok(Math.abs(byL.y - 120) < 1e-4);
+
   // Clamping at boundaries
   const below = lookupPath(table, 'Y', -20);
   assert.equal(below.y, 0);

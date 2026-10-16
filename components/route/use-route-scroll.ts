@@ -104,6 +104,7 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
     let prevCounterText = '';
     let lastMeasuredW = 0;
     let lastMeasuredH = 0;
+    let mobileSmoothLen = -1;
 
     const setHudText = (txt: string) => {
       if (progressEl && prevHudText !== txt) {
@@ -148,8 +149,8 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
         ghostBottom!.setAttribute('d', '');
         drawnBottom!.setAttribute('d', '');
 
-        const leftX = Math.max(36, Math.round(wrapperW * 0.24));
-        const rightX = Math.min(wrapperW - 36, Math.round(wrapperW * 0.76));
+        const leftX = Math.max(44, Math.round(wrapperW * 0.3));
+        const rightX = Math.min(wrapperW - 44, Math.round(wrapperW * 0.7));
         const waypoints: { x: number; y: number }[] = [];
 
         const addMobileStation = (
@@ -185,7 +186,8 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
           addMobileStation(leftX, y1, 'intro', stop1Txt);
           const introSch = document.querySelector('#stop-1 .intro-schematic') || stop1Txt;
           const schRect = introSch.getBoundingClientRect();
-          waypoints.push({ x: leftX, y: schRect.bottom - wRect.top });
+          const exitY1 = Math.max(y1 + 40, schRect.bottom - wRect.top - 36);
+          waypoints.push({ x: leftX, y: exitY1 });
         }
 
         // Stop 2: Project stations & Portal card
@@ -203,7 +205,8 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
             st.querySelector('.txt'),
             isPortal ? undefined : idx,
           );
-          waypoints.push({ x: stX, y: cr.bottom - wRect.top });
+          const exitY = Math.max(nodeY + 60, cr.bottom - wRect.top - 48);
+          waypoints.push({ x: stX, y: exitY });
         });
 
         // Stop 3: Skills & Stack Schematic
@@ -215,7 +218,8 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
           addMobileStation(stop3X, y3, 'skills', stop3Txt);
           const skillsSch = document.querySelector('#stop-3 .skills-schematic') || stop3Txt;
           const sch3Rect = skillsSch.getBoundingClientRect();
-          waypoints.push({ x: stop3X, y: sch3Rect.bottom - wRect.top });
+          const exitY3 = Math.max(y3 + 60, sch3Rect.bottom - wRect.top - 36);
+          waypoints.push({ x: stop3X, y: exitY3 });
         }
 
         // Stop 4: Recap & Contact
@@ -231,9 +235,17 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
         }
 
         const d = buildMobileWeavePath(waypoints, wrapperW * 0.5);
-        topTable = setPathAndSample(ghostTop!, drawnTop!, d, 10);
+        topTable = setPathAndSample(ghostTop!, drawnTop!, d, 8);
+        drawnTop!.style.strokeDasharray = `${topTable.totalLen.toFixed(1)}`;
+        clipRectTop!.setAttribute('height', String(wrapperH + 40));
+
+        const initDocY = (window.scrollY || window.pageYOffset || 0) + window.innerHeight * CONFIG.tipPosition;
+        mobileSmoothLen = lookupPath(topTable, 'Y', initDocY).len;
         return;
       }
+
+      drawnTop!.style.strokeDasharray = '';
+      drawnTop!.style.strokeDashoffset = '';
 
       const stop1Anchor = document.querySelector('#stop-1 .anchor')!;
       const stop3Anchor = document.querySelector('#stop-3 .anchor')!;
@@ -337,8 +349,24 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
       const docY = scrollY + vh * CONFIG.tipPosition;
 
       if (!isDesktopHoriz) {
-        const s = lookupPath(topTable, 'Y', docY);
-        clipRectTop!.setAttribute('height', (s.y + 4).toFixed(1));
+        const targetS = lookupPath(topTable, 'Y', docY);
+        if (mobileSmoothLen < 0) {
+          mobileSmoothLen = targetS.len;
+        } else {
+          const diff = targetS.len - mobileSmoothLen;
+          if (Math.abs(diff) > 0.5) {
+            const step = Math.sign(diff) * Math.min(Math.abs(diff) * 0.12, 14);
+            mobileSmoothLen += step;
+            rafPending = true;
+            requestAnimationFrame(() => render(window.scrollY || window.pageYOffset || 0));
+          } else {
+            mobileSmoothLen = targetS.len;
+          }
+        }
+
+        const s = lookupPath(topTable, 'L', mobileSmoothLen);
+        const dashOffset = Math.max(0, topTable.totalLen - s.len);
+        drawnTop!.style.strokeDashoffset = dashOffset.toFixed(1);
         clipRectBottom!.setAttribute('height', '0');
         tipCircle!.style.opacity = '1';
         horizTip!.style.opacity = '0';
@@ -350,7 +378,7 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
         let reachedPortal = false;
 
         for (const st of mobileStations) {
-          const reached = docY >= st.y - 4;
+          const reached = s.y >= st.y - 4;
           st.circle.classList.toggle('is-reached', reached);
           if (docY >= st.y - vh * CONFIG.textLead) {
             st.txtEl?.classList.add('is-visible');
