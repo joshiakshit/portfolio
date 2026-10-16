@@ -1,12 +1,51 @@
 import Link from 'next/link';
+import { PageShell } from '@/components/ui/page-shell';
+import { ExternalLink } from '@/components/ui/primitives';
 import { getRepos } from '@/lib/github';
 import ProjectCollection from './project-collection';
-import SpaceBackground from '../space-background';
-import SocialLinks from '../social-links';
 
-export const metadata={title:'projects',description:'Apps, services, and experiments by ash. Explore the projects, try their sketches, and read the source.'};
+export const metadata = {
+  title: 'repositories',
+  description: 'Complete index of projects, experiments, and public GitHub repositories by ash.',
+};
 
-export default async function Projects() {
-  const repos=await getRepos();
-  return <div className="personal-site projects-site"><SpaceBackground /><a className="skip-link" href="#project-content">Skip to projects</a><header className="site-header"><Link className="wordmark" href="/" aria-label="ash home">ash<span className="wordmark-dot">.</span></Link></header><main id="project-content" className="collection-main"><div className="collection-intro"><Link className="back" href="/">← back to the orbit</Link><h1>Things I’ve built<span>.</span></h1></div><ProjectCollection repos={repos} /></main><footer className="site-footer"><span>© {new Date().getFullYear()} ash</span><span>Always something else to figure out.</span><nav aria-label="Footer navigation"><Link href="/">home ↗</Link><Link href="/blog">blog ↗</Link><SocialLinks /></nav></footer></div>;
+export default async function ProjectsPage() {
+  const repos = await getRepos();
+
+  return (
+    <PageShell
+      id="repos-main"
+      skipLabel="Skip to repositories"
+      tag="WORKBENCH  ·  ARCHIVE"
+      title="Projects & Repositories"
+      subtitle={
+        <>
+          Six curated systems &amp; product builds up top, followed by the full public workbench
+          fetched from{' '}
+          <ExternalLink
+            href="https://github.com/joshiakshit?tab=repositories"
+            className="stop-link"
+          >
+            github.com/joshiakshit ↗
+          </ExternalLink>
+          .
+        </>
+      }
+      footer={
+        <>
+          <Link href="/" className="portal-primary-btn">
+            ← return to main story route
+          </Link>
+          <ExternalLink
+            href="https://github.com/joshiakshit?tab=repositories"
+            className="stop-link"
+          >
+            view on GitHub ↗
+          </ExternalLink>
+        </>
+      }
+    >
+      <ProjectCollection repos={repos} />
+    </PageShell>
+  );
 }

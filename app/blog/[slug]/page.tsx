@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { PageShell } from '@/components/ui/page-shell';
 import { getAllPosts, getPost } from '@/lib/posts';
-import SocialLinks from '../../social-links';
 
 export function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }));
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default async function Post({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   let post;
   try {
@@ -27,21 +27,26 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
   } catch {
     notFound();
   }
+
   return (
-    <>
-      <main>
-        <div className="projects-header">
-          <Link href="/blog" className="back">← blog</Link>
-          <h1>{post!.meta.title}</h1>
-        </div>
-        <p className="post-date">{post!.meta.date}</p>
-        <article className="post-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post!.content}</ReactMarkdown>
-        </article>
-      </main>
-      <footer className="site-footer">
-        <nav aria-label="Social links"><SocialLinks /></nav>
-      </footer>
-    </>
+    <PageShell
+      tag={`DISPATCH  ·  ${post.meta.date}`}
+      title={post.meta.title}
+      subtitle={post.meta.description}
+      footer={
+        <>
+          <Link href="/blog" className="portal-primary-btn">
+            ← all notes
+          </Link>
+          <Link href="/" className="stop-link">
+            return to route ↗
+          </Link>
+        </>
+      }
+    >
+      <article className="blog-article-body">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+      </article>
+    </PageShell>
   );
 }

@@ -1,0 +1,177 @@
+/* ==========================================================================
+   INTERACTIVE PROJECT SKETCH CARDS
+   ========================================================================== */
+.project-sketch {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.sketch-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sketch-demo {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+}
+
+.sketch-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.doodle-orbit,
+.doodle-guide {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.2px;
+}
+
+.doodle-surface {
+  fill: var(--bg);
+  stroke: var(--ink);
+  stroke-width: 1.4px;
+}
+
+.doodle-axis {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4px;
+}
+
+.doodle-small {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  fill: var(--dim);
+  letter-spacing: 0.04em;
+}
+
+.doodle-big {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.doodle-prompt {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  fill: var(--ink);
+}
+
+.lock-shackle {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.2px;
+  stroke-linecap: round;
+}
+
+.lock-shackle.is-unlocked {
+  stroke: var(--accent);
+  transform: translateY(-4px);
+}
+
+.auth-check {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.spectrum-bar {
+  fill: var(--ghost);
+  stroke: var(--ink);
+  stroke-width: 1px;
+}
+
+.spectrum-bar.is-active {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.receiver-window {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+}
+
+.attendance-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5px;
+  stroke-linecap: round;
+}
+
+.wave-bar {
+  stroke: var(--dim);
+  stroke-width: 3px;
+  stroke-linecap: round;
+}
+
+.wave-bar.is-active { stroke: var(--accent); }
+
+.step-box {
+  fill: var(--bg);
+  stroke: var(--border);
+  stroke-width: 1.2px;
+  cursor: pointer;
+}
+
+.step-box.is-on {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+}
+
+.sketch-readout {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.35rem 0.6rem;
+}
+
+.sketch-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sketch-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.32rem 0.65rem;
+  cursor: pointer;
+}
+
+.sketch-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.sketch-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

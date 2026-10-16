@@ -1,16 +1,17 @@
 import Link from 'next/link';
+import { PageShell } from '@/components/ui/page-shell';
 
 export default function NotFound() {
   return (
-    <main>
-      <div className="projects-header">
-        <Link href="/" className="back">← back</Link>
-        <h1>404</h1>
-      </div>
-      <div className="terminal-block">
-        <p className="tagline">$ cd /that/page</p>
-        <p className="tagline">bash: cd: /that/page: No such file or directory</p>
-      </div>
-    </main>
+    <PageShell
+      tag="404  ·  NOT FOUND"
+      title="End of the line."
+      subtitle={<code>$ cd /that/page — No such file or directory</code>}
+      footer={
+        <Link href="/" className="portal-primary-btn">
+          ← return to main route
+        </Link>
+      }
+    />
   );
 }

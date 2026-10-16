@@ -1,137 +1,358 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { ProgressRing, SketchFrame } from '@/components/sketches/sketch-frame';
+import type { FeaturedProject } from '@/lib/project-catalog';
 
-const topics = ['Explain the internet\nto a time traveler.', 'What would you build\nwith an extra day?', 'Defend your most\nunpopular food opinion.', 'Teach a robot\nhow to make a friend.'];
+const AUTH_NODES = [
+  { x: 44, label: 'client' },
+  { x: 161, label: 'auth' },
+  { x: 278, label: 'redis' },
+];
 
-export function SpeakingSketch({ active = true }: { active?: boolean }) {
-  const [topic, setTopic] = useState(0);
-  const [timer, setTimer] = useState({ remaining: 30, running: false });
+export function AuthSketch() {
+  const [token, setToken] = useState<number | null>(108);
+  const unlocked = token !== null;
 
-  useEffect(() => {
-    if (!timer.running || !active) return;
-    const id = window.setInterval(() => setTimer(previous => ({ remaining: Math.max(0, previous.remaining - 1), running: previous.remaining > 1 })), 1000);
-    return () => window.clearInterval(id);
-  }, [timer.running, active]);
-
-  function nextTopic() {
-    setTopic(previous => (previous + 1) % topics.length);
-    setTimer({ remaining: 30, running: false });
-  }
-
-  return <div className="project-sketch speaking-sketch">
-    <div className="sketch-topline"><span>05 / think on your feet</span><span className="sketch-demo">try it</span></div>
-    <div className="speaking-stage">
-      <div className="prompt-paper"><span className="paper-pin" /><span className="prompt-label">your topic, no preparation.</span><p aria-live="polite">{topics[topic]}</p><svg viewBox="0 0 150 12" aria-hidden="true"><path d="M2 8 Q60 0 145 6 M15 11 Q75 5 132 9" /></svg></div>
-      <button className={`sketch-timer ${timer.running ? 'is-running' : ''}`} onClick={() => setTimer(previous => ({ remaining: previous.remaining || 30, running: !previous.running }))} aria-label={timer.running ? 'Pause speaking timer' : timer.remaining === 0 ? 'Restart speaking timer' : 'Start speaking timer'}>
-        <svg viewBox="0 0 80 80" aria-hidden="true"><circle className="timer-track" cx="40" cy="40" r="33" /><circle className="timer-progress" cx="40" cy="40" r="33" pathLength="100" strokeDasharray="100" strokeDashoffset={100 - timer.remaining / 30 * 100} /></svg>
-        <span>{String(timer.remaining).padStart(2, '0')}<small>{timer.running ? 'pause' : timer.remaining === 0 ? 'again?' : timer.remaining < 30 ? 'resume' : 'start'}</small></span>
-      </button>
-    </div>
-    <div className="sketch-controls"><button className="sketch-button" onClick={nextTopic}>another topic <span aria-hidden="true">↻</span></button><span>{timer.remaining === 0 ? 'Time’s up. Nicely done.' : '30 seconds. Give it a go.'}</span></div>
-  </div>;
+  return (
+    <SketchFrame
+      title="token verification primitive"
+      ariaLabel="Interactive JWT Lock Schematic"
+      readout={
+        unlocked
+          ? `SESSION-${token} · asymmetric JWT verified (TTL 900s)`
+          : 'REVOKED · token blacklisted in Redis (0ms propagation)'
+      }
+      actions={[
+        {
+          label: unlocked ? 'rotate token ↻' : 'issue token →',
+          onClick: () => setToken((prev) => (((prev ?? 100) + 37) % 900) + 100),
+        },
+        { label: 'revoke ×', onClick: () => setToken(null), disabled: !unlocked },
+      ]}
+    >
+      <circle cx="190" cy="86" r="56" className="doodle-orbit" />
+      <path
+        d={unlocked ? 'M166 78V56a24 24 0 0 1 48 0' : 'M166 78V56a24 24 0 0 1 48 0v22'}
+        className={`lock-shackle ${unlocked ? 'is-unlocked' : ''}`}
+      />
+      <rect x="150" y="77" width="80" height="56" rx="8" className="doodle-surface" />
+      <path
+        d="M175 105l10 10 22-24"
+        className="auth-check"
+        style={{ opacity: unlocked ? 1 : 0.18 }}
+      />
+      <path d="M46 174h288" className="doodle-guide" />
+      {AUTH_NODES.map(({ x, label }) => (
+        <g key={label} transform={`translate(${x}, 160)`}>
+          <rect width="58" height="26" rx="4" className="doodle-surface" />
+          <text x="29" y="17" textAnchor="middle" className="doodle-small">
+            {label}
+          </text>
+        </g>
+      ))}
+    </SketchFrame>
+  );
 }
 
-export function PokerSketch() {
-  const [chips, setChips] = useState(0);
-  return <div className="project-sketch poker-sketch">
-    <div className="sketch-topline"><span>06 / just one more hand</span><span className="sketch-demo">try it</span></div>
-    <div className="poker-stage">
-      <svg className="poker-doodle" viewBox="0 0 360 170" aria-hidden="true">
-        <ellipse className="table-edge" cx="180" cy="100" rx="144" ry="57" /><ellipse className="table-inner" cx="180" cy="100" rx="133" ry="47" />
-        <g transform="translate(66 25) rotate(-15 27 36)"><rect className="playing-card" width="50" height="71" rx="5" /><text x="8" y="19">A</text><text x="16" y="50" className="card-suit">♠</text></g>
-        <g transform="translate(104 23) rotate(9 27 36)"><rect className="playing-card second-card" width="50" height="71" rx="5" /><text x="8" y="19">K</text><text x="16" y="50" className="card-suit">♣</text></g>
-        <path className="table-scribble" d="M251 33q20 3 22 25m-10-4 10 5 5-10" /><text className="table-note" x="238" y="26">your move</text>
-        {[0, 1, 2].map(stack => <g key={stack} transform={`translate(${147 + stack * 34} ${111 - stack * 4})`}>{Array.from({ length: Math.min(8, 2 + Math.floor((chips + 2 - stack) / 3)) }, (_, index) => <g key={index} transform={`translate(0 ${-index * 6})`}><ellipse className={`chip-base chip-color-${stack}`} cx="0" cy="3" rx="18" ry="7" /><ellipse className={`chip-face chip-color-${stack}`} rx="18" ry="7" /><ellipse className="chip-ring" rx="12" ry="4" /></g>)}</g>)}
-      </svg>
-      <button className="pot-button" onClick={() => setChips(previous => previous + 1)} aria-label="Add 10 chips to the demo pot"><span className="pot-value">{chips * 10}</span><span>in the pot <b aria-hidden="true">+</b></span></button>
-    </div>
-    <div className="sketch-controls"><button className="sketch-button" onClick={() => setChips(0)} disabled={chips === 0}>new hand <span aria-hidden="true">↻</span></button><span>tap the pot to add 10</span></div>
-  </div>;
-}
+const BAND_ORDER = [3, 5, 1, 7, 6, 2, 4, 0];
 
-const initialBeats = [true, false, true, false, true, true, false, true];
-const heights = [18, 35, 57, 28, 76, 44, 91, 62, 38, 83, 51, 97, 65, 39, 75, 49, 24, 54, 34, 16];
+export function WarfareSketch() {
+  const [step, setStep] = useState(0);
+  const [bars, setBars] = useState([40, 100, 60, 126, 50, 110, 72, 86]);
 
-export function MusicSketch({ active = true }: { active?: boolean }) {
-  const [playing, setPlaying] = useState(false);
-  const [beats, setBeats] = useState(initialBeats);
-  const [step, setStep] = useState(-1);
-  const [tempo, setTempo] = useState(110);
-  const [visible, setVisible] = useState(false);
-  const sketch = useRef<HTMLDivElement>(null);
+  const bandIdx = BAND_ORDER[step % BAND_ORDER.length];
+  const mode = step % 3 === 0 ? 'ε-explore' : 'exploit';
+  const snr = (bars[bandIdx] * 0.16).toFixed(1);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(entries => setVisible(entries[0].isIntersecting));
-    if (sketch.current) observer.observe(sketch.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!playing || !visible || !active) return;
-    const id = window.setInterval(() => setStep(previous => (previous + 1) % 8), 60000 / tempo / 2);
-    return () => window.clearInterval(id);
-  }, [playing, visible, tempo, active]);
-
-  return <div ref={sketch} className={`project-sketch music-sketch ${playing && visible && active ? 'is-playing' : ''} ${step >= 0 && beats[step] ? 'beat-active' : ''}`}>
-    <div className="sketch-topline"><span>04 / a little visual rhythm</span><span className="sketch-demo">try it</span></div>
-    <div className="music-stage">
-      <div className="waveform" aria-hidden="true">{heights.map((height, index) => <i key={index} style={{ height: `${height}%`, animationDelay: `${index * -0.11}s` }} />)}</div>
-      <div className="beat-grid" role="group" aria-label="Rhythm steps">{beats.map((enabled, index) => <button key={index} className={`${enabled ? 'enabled' : ''} ${playing && step === index ? 'current-step' : ''}`} onClick={() => setBeats(previous => previous.map((beat, i) => i === index ? !beat : beat))} aria-label={`Beat ${index + 1}`} aria-pressed={enabled}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span></button>)}</div>
-    </div>
-    <div className="sketch-controls music-controls"><button className="sketch-button" aria-pressed={playing} onClick={() => { if (!playing && step < 0) setStep(0); setPlaying(previous => !previous); }}>{playing ? 'Ⅱ pause' : '▷ play'}</button><label className="tempo-control"><input aria-label="Visual loop tempo" type="range" min="60" max="160" value={tempo} onChange={event => setTempo(Number(event.target.value))} /><span>{tempo} bpm</span></label></div>
-    <p className="visual-loop-note">toggle the steps · visual loop, no audio</p>
-  </div>;
+  return (
+    <SketchFrame
+      title="1 receiver · 8 frequency bands"
+      ariaLabel="Frequency Spectrum Scanner"
+      readout={`observing band 0${bandIdx + 1} · SNR +${snr} dB (${mode})`}
+      actions={[
+        { label: 'scan next band →', onClick: () => setStep((s) => s + 1) },
+        {
+          label: 'shuffle spectrum ↻',
+          onClick: () => {
+            setBars(bars.map((_, i) => 34 + ((i * 29 + step * 43 + 61) % 98)));
+            setStep((s) => s + 1);
+          },
+        },
+      ]}
+    >
+      <path d="M34 36h312M34 76h312M34 116h312M34 156h312" className="doodle-guide" />
+      <path d="M34 24v144h312" className="doodle-axis" />
+      <g>
+        {bars.map((h, i) => (
+          <rect
+            key={i}
+            x={46 + i * 38}
+            y={168 - h}
+            width="22"
+            height={h}
+            rx="2"
+            className={`spectrum-bar ${i === bandIdx ? 'is-active' : ''}`}
+          />
+        ))}
+      </g>
+      <rect
+        x={41 + bandIdx * 38}
+        y="28"
+        width="32"
+        height="140"
+        rx="3"
+        className="receiver-window"
+      />
+      <text x="190" y="194" textAnchor="middle" className="doodle-small">
+        BANDS 01 — 08 (MULTI-ARMED BANDIT POLICY)
+      </text>
+    </SketchFrame>
+  );
 }
 
 export function AxisSketch() {
-  const [attendance, setAttendance] = useState({ attended: 9, total: 12 });
-  const percent = Math.round(attendance.attended / attendance.total * 100);
-  return <div className="project-sketch axis-sketch">
-    <div className="sketch-topline"><span>attendance sandbox</span><span className="sketch-demo">try it</span></div>
-    <svg className="service-doodle axis-phone" viewBox="0 0 400 265" role="img" aria-label={`Demo attendance: ${percent} percent, ${attendance.attended} out of ${attendance.total} classes`}>
-      <rect x="114" y="5" width="172" height="253" rx="22" className="doodle-surface" /><rect x="174" y="13" width="52" height="5" rx="3" />
-      <text x="133" y="42" className="doodle-wordmark">axis</text><path d="M251 35h14m-10-4v8" />
-      <circle cx="200" cy="108" r="43" className="doodle-track" /><circle cx="200" cy="108" r="43" className="attendance-ring" pathLength="100" strokeDasharray={`${percent} 100`} transform="rotate(-90 200 108)" />
-      <text x="200" y="111" textAnchor="middle" className="doodle-value">{percent}%</text><text x="200" y="128" textAnchor="middle" className="doodle-small">{attendance.attended} / {attendance.total} classes</text>
-      <text x="132" y="175" className="doodle-small">NEXT UP</text><rect x="130" y="185" width="140" height="24" rx="4" /><path d="M138 197h5m9 0h63m25 0h20" /><rect x="130" y="216" width="140" height="24" rx="4" /><path d="M138 228h5m9 0h48m40 0h20" />
-      <path d="M86 74h-24v36m253 83h23v-35" className="doodle-guide" /><text x="34" y="127" className="doodle-small">plan.</text><text x="307" y="145" className="doodle-small">attend.</text>
-    </svg>
-    <div className="sketch-controls"><div className="sketch-action-group"><button className="sketch-button" onClick={() => setAttendance(a => ({ attended: a.attended + 1, total: a.total + 1 }))}>attend +</button><button className="sketch-button" onClick={() => setAttendance(a => ({ ...a, total: a.total + 1 }))}>skip −</button></div><button className="sketch-button" onClick={() => setAttendance({ attended: 9, total: 12 })}>reset ↻</button></div>
-  </div>;
+  const [state, setState] = useState({ attended: 14, total: 17 });
+  const pct = Math.round((state.attended / state.total) * 100);
+  const canSkip = Math.floor(state.attended / 0.75 - state.total);
+  const needed = Math.ceil((0.75 * state.total - state.attended) / 0.25);
+
+  const statusText =
+    canSkip > 0
+      ? `safe buffer · can skip ${canSkip} lecture${canSkip > 1 ? 's' : ''} and stay >= 75%`
+      : pct < 75
+        ? `below 75% · need ${needed} consecutive class${needed > 1 ? 'es' : ''} to recover`
+        : 'on the edge · attend next lecture to build buffer';
+
+  return (
+    <SketchFrame
+      title="attendance margin calculator"
+      ariaLabel="Axis Mobile Attendance Ring"
+      readout={statusText}
+      actions={[
+        {
+          label: '+ attend class',
+          onClick: () => setState((s) => ({ attended: s.attended + 1, total: s.total + 1 })),
+        },
+        {
+          label: 'skip class −',
+          onClick: () => setState((s) => ({ attended: s.attended, total: s.total + 1 })),
+        },
+      ]}
+    >
+      <rect x="115" y="10" width="150" height="190" rx="18" className="doodle-surface" />
+      <rect x="165" y="18" width="50" height="4" rx="2" className="doodle-guide" />
+      <ProgressRing cx={190} cy={96} r={42} pct={pct} />
+      <text x="190" y="94" textAnchor="middle" className="doodle-big">
+        {pct}%
+      </text>
+      <text x="190" y="110" textAnchor="middle" className="doodle-small">
+        {state.attended} / {state.total} classes
+      </text>
+      <path d="M140 162h100M152 174h76" className="doodle-guide" />
+    </SketchFrame>
+  );
 }
 
-export function AuthSketch() {
-  const [token, setToken] = useState<number | null>(null);
-  const [generation, setGeneration] = useState(0);
-  function issue() { const next = generation + 1; setGeneration(next); setToken(next); }
-  return <div className={`project-sketch auth-sketch ${token !== null ? 'token-issued' : ''}`}>
-    <div className="sketch-topline"><span>the life of a token</span><span className="sketch-demo">local demo</span></div>
-    <svg className="service-doodle auth-lock" viewBox="0 0 400 265" aria-hidden="true">
-      <circle cx="200" cy="112" r="83" className="doodle-guide" /><circle cx="200" cy="112" r="74" className="doodle-guide" strokeDasharray="2 9" />
-      <path d={token !== null ? 'M173 106V80a27 27 0 0 1 54 0' : 'M173 106V80a27 27 0 0 1 54 0v26'} className="lock-shackle" /><rect x="156" y="105" width="88" height="64" rx="10" className="doodle-surface" />
-      {token !== null ? <path d="m183 137 12 12 24-28" className="auth-check" /> : <><circle cx="200" cy="131" r="6" /><path d="M200 137v13" /></>}
-      <path d="M51 210h297" className="doodle-guide" />{[70,200,330].map((x,i) => <g key={x}><rect x={x-26} y="197" width="52" height="27" rx="5" className="doodle-surface" /><text x={x} y="214" textAnchor="middle" className="doodle-small">{['client','auth','app'][i]}</text></g>)}<path d="m117 206 6 4-6 4m130-8 6 4-6 4" className={token !== null ? 'auth-check' : 'doodle-guide'} />
-    </svg>
-    <p className="token-readout" aria-live="polite">{token === null ? 'no token · access locked' : `DEMO-${String(token).padStart(3,'0')} · access granted`}</p>
-    <div className="sketch-controls"><button className="sketch-button" onClick={issue}>{token === null ? 'issue demo token →' : 'rotate token ↻'}</button><button className="sketch-button" onClick={() => setToken(null)} disabled={token === null}>revoke ×</button></div>
-  </div>;
+const WAVE_SPANS = [25, 40, 18, 52, 30, 46, 20, 56, 32, 42, 22, 50, 34, 26, 15];
+
+export function MusicSketch() {
+  const [beatCursor, setBeatCursor] = useState(0);
+  const [steps, setSteps] = useState([true, false, true, true, false, true, false, true]);
+
+  return (
+    <SketchFrame
+      title="voice packet rhythm buffer"
+      ariaLabel="Audio Waveform and Step Sequencer"
+      readout={`step 0${(beatCursor % 8) + 1}/08 · 120 BPM · 64kbps Opus frame lock`}
+      actions={[
+        { label: 'step beat →', onClick: () => setBeatCursor((c) => (c + 1) % 8) },
+        {
+          label: 'invert pattern ↻',
+          onClick: () => setSteps((prev) => prev.map((b) => !b)),
+        },
+      ]}
+    >
+      <path d="M30 140h320" className="doodle-guide" />
+      <g>
+        {WAVE_SPANS.map((baseSpan, i) => {
+          const span = 16 + ((baseSpan + beatCursor * 13 + i * 7) % 44);
+          return (
+            <line
+              key={i}
+              x1={48 + i * 20}
+              y1={90 - span}
+              x2={48 + i * 20}
+              y2={90 + span}
+              className={`wave-bar ${i % 4 === beatCursor % 4 ? 'is-active' : ''}`}
+            />
+          );
+        })}
+      </g>
+      <g transform="translate(42, 154)">
+        {steps.map((on, idx) => (
+          <rect
+            key={idx}
+            x={idx * 38}
+            y="0"
+            width="32"
+            height="24"
+            rx="4"
+            className={`step-box ${on ? 'is-on' : ''}`}
+            onClick={() => setSteps((prev) => prev.map((v, i) => (i === idx ? !v : v)))}
+          />
+        ))}
+      </g>
+    </SketchFrame>
+  );
 }
 
-const demoSignals = [18, 64, 35, 88, 26, 72, 42, 55];
-const scanOrder = [3, 5, 1, 7, 6, 2, 4, 0];
-export function WarfareSketch() {
-  const [scan, setScan] = useState(-1);
-  const band = scan < 0 ? -1 : scanOrder[scan % scanOrder.length];
-  return <div className="project-sketch warfare-sketch">
-    <div className="sketch-topline"><span>one receiver. eight bands.</span><span className="sketch-demo">illustration</span></div>
-    <svg className="service-doodle spectrum-doodle" viewBox="0 0 400 265" role="img" aria-label={band < 0 ? 'Illustrative spectrum, eight frequency bands' : `Illustrative receiver observing band ${band+1}`}>
-      {[55,95,135,175].map(y => <path key={y} d={`M37 ${y}h326`} className="doodle-guide" />)}
-      <path d="M37 34v173h326" /><text x="37" y="23" className="doodle-small">OBSERVATION WINDOW</text>
-      {demoSignals.map((strength,i) => <g key={i} className={band === i ? 'band-selected' : ''}><rect x={47+i*39} y={200-strength*1.5} width="24" height={strength*1.5} rx="2" className="spectrum-bar" /><text x={59+i*39} y="225" textAnchor="middle" className="doodle-small">0{i+1}</text></g>)}
-      {band >= 0 && <g><rect x={43+band*39} y="38" width="32" height="169" className="receiver-window" /><path d={`M${43+band*39} 31h32m-16-5v10`} /></g>}
-      <text x="200" y="252" textAnchor="middle" className="doodle-small">FREQUENCY BANDS →</text>
-    </svg>
-    <div className="sketch-controls"><button className="sketch-button" onClick={() => setScan(s => s+1)}>scan next band →</button><span aria-live="polite">{band < 0 ? 'ready to observe' : `observing band ${band+1}`}</span></div><p className="visual-loop-note">illustrative pattern · no receiver connected</p>
-  </div>;
+const PROMPTS: [string, string][] = [
+  ['Explain the internet', 'to a medieval blacksmith.'],
+  ['Defend your most', 'unpopular systems opinion.'],
+  ['What would you build', 'with an extra day a week?'],
+  ['Explain public-key crypto', 'without using math words.'],
+  ['Describe a bug that', 'taught you the most.'],
+];
+
+export function ImpromptuSketch() {
+  const [promptIdx, setPromptIdx] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(30);
+  const [line1, line2] = PROMPTS[promptIdx];
+
+  return (
+    <SketchFrame
+      title="30-second speaking drill"
+      ariaLabel="Impromptu Prompt Card and Timer"
+      readout={
+        secondsLeft === 0
+          ? 'time up · audio blob saved locally on-device'
+          : `local buffer ready · ${secondsLeft}s remaining on the clock`
+      }
+      actions={[
+        {
+          label: 'another topic ↻',
+          onClick: () => {
+            setPromptIdx((i) => (i + 1) % PROMPTS.length);
+            setSecondsLeft(30);
+          },
+        },
+        {
+          label: 'countdown −5s',
+          onClick: () => setSecondsLeft((s) => (s <= 5 ? 30 : s - 5)),
+        },
+      ]}
+    >
+      <rect x="28" y="28" width="210" height="148" rx="8" className="doodle-surface" />
+      <circle cx="133" cy="42" r="4" className="sch-dot" />
+      <text x="46" y="68" className="doodle-small">
+        PROMPT // NO PREP
+      </text>
+      <text x="46" y="102" className="doodle-prompt">
+        {line1}
+      </text>
+      <text x="46" y="124" className="doodle-prompt">
+        {line2}
+      </text>
+      <path d="M46 150 Q 110 142, 200 150" className="doodle-guide" />
+      <ProgressRing cx={304} cy={102} r={44} pct={Math.round((secondsLeft / 30) * 100)} />
+      <text x="304" y="108" textAnchor="middle" className="doodle-big">
+        {secondsLeft}s
+      </text>
+    </SketchFrame>
+  );
+}
+
+export function PokerSketch() {
+  const [pot, setPot] = useState(40);
+
+  return (
+    <SketchFrame
+      title="table pot & stack ledger"
+      ariaLabel="Poker Cards and Chip Stack"
+      readout={`current pot: ${pot} chips · blinds 5 / 10`}
+      actions={[
+        { label: '+20 raise pot', onClick: () => setPot((p) => p + 20) },
+        { label: 'new hand ↻', onClick: () => setPot(20) },
+      ]}
+    >
+      <ellipse cx="190" cy="118" rx="148" ry="62" className="doodle-orbit" />
+      <ellipse cx="190" cy="118" rx="134" ry="50" className="doodle-surface" />
+      {[
+        { tx: 'translate(82, 42) rotate(-12)', rank: 'A♠' },
+        { tx: 'translate(122, 38) rotate(8)', rank: 'K♣' },
+      ].map(({ tx, rank }) => (
+        <g key={rank} transform={tx}>
+          <rect width="48" height="68" rx="5" className="doodle-surface" />
+          <text x="10" y="20" className="doodle-prompt">
+            {rank}
+          </text>
+        </g>
+      ))}
+      <circle cx="248" cy="108" r="34" className="doodle-orbit" />
+      <text x="248" y="106" textAnchor="middle" className="doodle-big">
+        {pot}
+      </text>
+      <text x="248" y="122" textAnchor="middle" className="doodle-small">
+        CHIPS
+      </text>
+    </SketchFrame>
+  );
+}
+
+export function AutoProjectSketch({ project }: { project: FeaturedProject }) {
+  const [activeNode, setActiveNode] = useState(0);
+  const nodes = project.stack.slice(0, 3);
+  while (nodes.length < 3) nodes.push(project.language || 'Core');
+
+  return (
+    <SketchFrame
+      title={`${project.type.toLowerCase()} // pipeline`}
+      badge="auto-schematic"
+      ariaLabel={`${project.name} schematic`}
+      readout={`inspecting stage 0${(activeNode % 3) + 1}: ${nodes[activeNode % 3]} · status nominal`}
+      actions={[{ label: 'trace next node →', onClick: () => setActiveNode((n) => (n + 1) % 3) }]}
+    >
+      <rect x="34" y="26" width="312" height="64" rx="8" className="doodle-surface" />
+      <text x="190" y="54" textAnchor="middle" className="doodle-prompt">
+        {project.name}
+      </text>
+      <text x="190" y="74" textAnchor="middle" className="doodle-small">
+        {project.language.toUpperCase()} · {project.repo}
+      </text>
+      <path d="M84 90v36M190 90v36M296 90v36" className="doodle-guide" />
+      {nodes.map((label, idx) => (
+        <g key={idx} transform={`translate(${36 + idx * 106}, 126)`}>
+          <rect
+            width="96"
+            height="48"
+            rx="6"
+            className={activeNode % 3 === idx ? 'sch-box sch-box-accent' : 'doodle-surface'}
+          />
+          <text x="48" y="28" textAnchor="middle" className="doodle-small">
+            {label.slice(0, 13)}
+          </text>
+        </g>
+      ))}
+    </SketchFrame>
+  );
+}
+
+export function ProjectSketchRenderer({ project }: { project: FeaturedProject }) {
+  switch (project.sketch) {
+    case 'auth':
+      return <AuthSketch />;
+    case 'warfare':
+      return <WarfareSketch />;
+    case 'axis':
+      return <AxisSketch />;
+    case 'music':
+      return <MusicSketch />;
+    case 'impromptu':
+      return <ImpromptuSketch />;
+    case 'poker':
+      return <PokerSketch />;
+    default:
+      return <AutoProjectSketch project={project} />;
+  }
 }
