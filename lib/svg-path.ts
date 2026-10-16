@@ -88,3 +88,19 @@ export function buildHorizWavePath(entryX: number, horizLineY: number, stationRe
   const exitX = stationRelX[stationRelX.length - 1];
   return `${d} L ${exitX.toFixed(1)} ${vh.toFixed(1)}`;
 }
+
+export function buildMobileWeavePath(
+  waypoints: ReadonlyArray<{ x: number; y: number }>,
+  startX: number,
+): string {
+  if (!waypoints.length) return '';
+  let d = `M ${startX.toFixed(1)} 0`;
+  let prev = { x: startX, y: 0 };
+  for (const pt of waypoints) {
+    const my = ((prev.y + pt.y) * 0.5).toFixed(1);
+    d += ` C ${prev.x.toFixed(1)} ${my}, ${pt.x.toFixed(1)} ${my}, ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`;
+    prev = pt;
+  }
+  return d;
+}
+

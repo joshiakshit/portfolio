@@ -5,6 +5,7 @@ import { featuredProjects } from '@/lib/project-catalog';
 import { SKILL_BRANCHES } from '@/lib/site-data';
 import {
   buildHorizWavePath,
+  buildMobileWeavePath,
   EMPTY_SAMPLE_TABLE,
   lookupPath,
   type PathSampleTable,
@@ -18,6 +19,15 @@ const CONFIG = {
   introDelayMs: 200,
   hintDelayMs: 2400,
   slidePortion: 0.78,
+};
+
+type MobileStation = {
+  x: number;
+  y: number;
+  kind: 'intro' | 'project' | 'portal' | 'skills' | 'recap';
+  projectIndex?: number;
+  circle: SVGCircleElement;
+  txtEl: Element | null;
 };
 
 const byId = <T extends Element = HTMLElement>(id: string) =>
@@ -71,6 +81,7 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
     let hCircles: SVGCircleElement[] = [];
     let hReachedState: boolean[] = [];
     let skillBranchEls: SVGGElement[] = [];
+    let mobileStations: MobileStation[] = [];
 
     let isDesktopHoriz = false;
     let topTable: PathSampleTable = EMPTY_SAMPLE_TABLE;
@@ -91,6 +102,8 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
     let skillsBranchesDrawn = false;
     let prevHudText = '';
     let prevCounterText = '';
+    let lastMeasuredW = 0;
+    let lastMeasuredH = 0;
 
     const setHudText = (txt: string) => {
       if (progressEl && prevHudText !== txt) {
@@ -114,6 +127,9 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
       const wRect = wrapper!.getBoundingClientRect();
       const wrapperW = wrapper!.offsetWidth;
       const wrapperH = wrapper!.scrollHeight;
+      lastMeasuredW = wrapperW;
+      lastMeasuredH = wrapperH;
+
       svg!.setAttribute('width', String(wrapperW));
       svg!.setAttribute('height', String(wrapperH));
       svg!.setAttribute('viewBox', `0 0 ${wrapperW} ${wrapperH}`);
@@ -126,35 +142,96 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
       hCircles = [];
       hReachedState = [];
       skillBranchEls = [];
+      mobileStations = [];
 
       if (!isDesktopHoriz) {
         ghostBottom!.setAttribute('d', '');
         drawnBottom!.setAttribute('d', '');
-        const mobilePts = Array.from(
-          document.querySelectorAll('#stop-1 .anchor, .project-station, #stop-3 .anchor, #stop-4 .anchor'),
-        ).map((el) => {
-          const r = el.getBoundingClientRect();
-          return {
-            x: 22,
-            y: r.top - wRect.top + Math.min(r.height * 0.5, 90),
-            isProj: el.classList.contains('project-station'),
-          };
-        });
-        if (!mobilePts.length) return;
 
-        let d = 'M 22 0';
-        let prev = { x: 22, y: 0 };
-        for (const pt of mobilePts) {
-          const my = ((prev.y + pt.y) * 0.5).toFixed(1);
-          d += ` C ${prev.x} ${my}, ${pt.x} ${my}, ${pt.x} ${pt.y.toFixed(1)}`;
-          prev = pt;
+        const leftX = Math.max(36, Math.round(wrapperW * 0.24));
+        const rightX = Math.min(wrapperW - 36, Math.round(wrapperW * 0.76));
+        const waypoints: { x: number; y: number }[] = [];
+
+        const addMobileStation = (
+          x: number,
+          y: number,
+          kind: MobileStation['kind'],
+          txtEl: Element | null,
+          projectIndex?: number,
+        ) => {
+          const isProj = kind === 'project' || kind === 'portal';
           const g = svgEl('g');
-          if (pt.isProj) g.appendChild(svgEl('circle', { class: 'project-ring', cx: pt.x, cy: pt.y.toFixed(1), r: 13 }));
-          g.appendChild(svgEl('circle', { class: 'node-circle is-reached', cx: pt.x, cy: pt.y.toFixed(1), r: pt.isProj ? 8 : 6 }));
+          if (isProj) {
+            g.appendChild(
+              svgEl('circle', { class: 'project-ring', cx: x, cy: y.toFixed(1), r: 13 }),
+            );
+          }
+          const circle = svgEl('circle', {
+            class: 'node-circle',
+            cx: x,
+            cy: y.toFixed(1),
+            r: isProj ? 8 : 7,
+          });
+          g.appendChild(circle);
           nodesGroup!.appendChild(g);
+          waypoints.push({ x, y });
+          mobileStations.push({ x, y, kind, projectIndex, circle, txtEl });
+        };
+
+        // Stop 1: Intro
+        if (stop1Txt) {
+          const r1 = stop1Txt.getBoundingClientRect();
+          const y1 = Math.max(52, r1.top - wRect.top - 16);
+          addMobileStation(leftX, y1, 'intro', stop1Txt);
+          const introSch = document.querySelector('#stop-1 .intro-schematic') || stop1Txt;
+          const schRect = introSch.getBoundingClientRect();
+          waypoints.push({ x: leftX, y: schRect.bottom - wRect.top });
         }
-        topTable = setPathAndSample(ghostTop!, drawnTop!, d, 12);
-        document.querySelectorAll('.stop .txt, .project-station .txt').forEach((el) => el.classList.add('is-visible'));
+
+        // Stop 2: Project stations & Portal card
+        const stations = Array.from(document.querySelectorAll('.project-station'));
+        stations.forEach((st, idx) => {
+          const card = st.querySelector('.station-grid, .portal-card') || st;
+          const cr = card.getBoundingClientRect();
+          const stX = idx % 2 === 0 ? rightX : leftX;
+          const nodeY = cr.top - wRect.top - 13;
+          const isPortal = idx >= featuredProjects.length;
+          addMobileStation(
+            stX,
+            nodeY,
+            isPortal ? 'portal' : 'project',
+            st.querySelector('.txt'),
+            isPortal ? undefined : idx,
+          );
+          waypoints.push({ x: stX, y: cr.bottom - wRect.top });
+        });
+
+        // Stop 3: Skills & Stack Schematic
+        if (stop3Txt) {
+          const lastX = waypoints.length ? waypoints[waypoints.length - 1].x : rightX;
+          const stop3X = lastX === leftX ? rightX : leftX;
+          const r3 = stop3Txt.getBoundingClientRect();
+          const y3 = r3.top - wRect.top - 14;
+          addMobileStation(stop3X, y3, 'skills', stop3Txt);
+          const skillsSch = document.querySelector('#stop-3 .skills-schematic') || stop3Txt;
+          const sch3Rect = skillsSch.getBoundingClientRect();
+          waypoints.push({ x: stop3X, y: sch3Rect.bottom - wRect.top });
+        }
+
+        // Stop 4: Recap & Contact
+        if (stop4Txt) {
+          const lastX = waypoints.length ? waypoints[waypoints.length - 1].x : leftX;
+          const stop4X = lastX === leftX ? rightX : leftX;
+          const r4 = stop4Txt.getBoundingClientRect();
+          const y4 = r4.top - wRect.top - 14;
+          addMobileStation(stop4X, y4, 'recap', stop4Txt);
+          const recapCard = document.querySelector('#stop-4 .recap-wide-grid') || stop4Txt;
+          const rcRect = recapCard.getBoundingClientRect();
+          waypoints.push({ x: stop4X, y: rcRect.top - wRect.top + 24 });
+        }
+
+        const d = buildMobileWeavePath(waypoints, wrapperW * 0.5);
+        topTable = setPathAndSample(ghostTop!, drawnTop!, d, 10);
         return;
       }
 
@@ -261,9 +338,52 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
 
       if (!isDesktopHoriz) {
         const s = lookupPath(topTable, 'Y', docY);
-        clipRectTop!.setAttribute('height', s.y.toFixed(1));
+        clipRectTop!.setAttribute('height', (s.y + 4).toFixed(1));
+        clipRectBottom!.setAttribute('height', '0');
+        tipCircle!.style.opacity = '1';
+        horizTip!.style.opacity = '0';
         tipCircle!.setAttribute('cx', s.x.toFixed(1));
         tipCircle!.setAttribute('cy', s.y.toFixed(1));
+
+        let activeMobileStation: MobileStation | null = null;
+        let activeProjIdx = 0;
+        let reachedPortal = false;
+
+        for (const st of mobileStations) {
+          const reached = docY >= st.y - 4;
+          st.circle.classList.toggle('is-reached', reached);
+          if (docY >= st.y - vh * CONFIG.textLead) {
+            st.txtEl?.classList.add('is-visible');
+          }
+          if (reached) {
+            activeMobileStation = st;
+            if (st.kind === 'project' && st.projectIndex !== undefined) {
+              activeProjIdx = st.projectIndex;
+              reachedPortal = false;
+            } else if (st.kind === 'portal') {
+              reachedPortal = true;
+            }
+          }
+        }
+
+        const total = featuredProjects.length;
+        setCounterText(
+          reachedPortal ? 'all repositories' : `project ${activeProjIdx + 1} / ${total}`,
+        );
+
+        if (!activeMobileStation) {
+          setHudText('stop 0/4');
+        } else if (activeMobileStation.kind === 'intro') {
+          setHudText('stop 1/4 · intro');
+        } else if (activeMobileStation.kind === 'project') {
+          setHudText(`stop 2/4 · project ${(activeMobileStation.projectIndex ?? 0) + 1}/${total}`);
+        } else if (activeMobileStation.kind === 'portal') {
+          setHudText('stop 2/4 · all repositories');
+        } else if (activeMobileStation.kind === 'skills') {
+          setHudText('stop 3/4 · skills');
+        } else {
+          setHudText('end of the line');
+        }
         return;
       }
 
@@ -367,27 +487,58 @@ export function useRouteScroll(wrapperRef: RefObject<HTMLElement | null>) {
     };
 
     const onResize = () => {
+      const curW = wrapper!.offsetWidth;
+      const curH = wrapper!.scrollHeight;
+      if (
+        !isDesktopHoriz &&
+        window.innerWidth <= 820 &&
+        curW === lastMeasuredW &&
+        Math.abs(curH - lastMeasuredH) < 4
+      ) {
+        render(window.scrollY || window.pageYOffset || 0);
+        return;
+      }
       measure();
       render(window.scrollY || window.pageYOffset || 0);
     };
 
     document.querySelectorAll('.project-station .txt').forEach((el) => el.classList.add('is-visible'));
-    onResize();
+    measure();
+    render(window.scrollY || window.pageYOffset || 0);
 
     const introTimer = window.setTimeout(() => stop1Txt?.classList.add('is-visible'), CONFIG.introDelayMs);
     const hintTimer = window.setTimeout(() => {
       if (!userScrolled) scrollHint?.classList.add('is-visible');
     }, CONFIG.hintDelayMs);
 
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            if (
+              wrapper!.offsetWidth !== lastMeasuredW ||
+              Math.abs(wrapper!.scrollHeight - lastMeasuredH) >= 4
+            ) {
+              measure();
+              render(window.scrollY || window.pageYOffset || 0);
+            }
+          })
+        : null;
+    ro?.observe(wrapper);
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
-    document.fonts?.ready?.then(onResize);
+    document.fonts?.ready?.then(() => {
+      measure();
+      render(window.scrollY || window.pageYOffset || 0);
+    });
 
     return () => {
       clearTimeout(introTimer);
       clearTimeout(hintTimer);
+      ro?.disconnect();
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
     };
   }, [wrapperRef]);
 }
+

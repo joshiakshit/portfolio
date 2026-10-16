@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildSampleTable, EMPTY_SAMPLE_TABLE, lookupPath } from '../lib/svg-path.ts';
+import {
+  buildMobileWeavePath,
+  buildSampleTable,
+  EMPTY_SAMPLE_TABLE,
+  lookupPath,
+} from '../lib/svg-path.ts';
 
 test('buildSampleTable returns EMPTY_SAMPLE_TABLE for zero-length paths', () => {
   const table = buildSampleTable({ getTotalLength: () => 0 }, 10);
@@ -34,3 +39,22 @@ test('buildSampleTable and lookupPath interpolate accurately along X and Y axes'
   const above = lookupPath(table, 'X', 999);
   assert.equal(above.x, 200);
 });
+
+test('buildMobileWeavePath generates S-curve cubic Bezier segments through alternating waypoints', () => {
+  assert.equal(buildMobileWeavePath([], 180), '');
+
+  const d = buildMobileWeavePath(
+    [
+      { x: 90, y: 80 },
+      { x: 90, y: 300 },
+      { x: 270, y: 360 },
+    ],
+    180,
+  );
+
+  assert.equal(
+    d,
+    'M 180.0 0 C 180.0 40.0, 90.0 40.0, 90.0 80.0 C 90.0 190.0, 90.0 190.0, 90.0 300.0 C 90.0 330.0, 270.0 330.0, 270.0 360.0',
+  );
+});
+

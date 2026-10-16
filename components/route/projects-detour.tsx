@@ -43,7 +43,8 @@ export function ProjectsDetour() {
       <div id="projects-sticky" className="projects-sticky">
         <div className="detour-hud">
           <span className="detour-kicker">
-            02 &nbsp;·&nbsp; SELECTED PROJECTS &nbsp;//&nbsp; HORIZONTAL DETOUR
+            02 &nbsp;·&nbsp; SELECTED PROJECTS
+            <span className="detour-kicker-mode"> &nbsp;//&nbsp; HORIZONTAL DETOUR</span>
           </span>
           <div className="detour-progress-wrap">
             <span id="detour-counter" className="detour-counter">
@@ -96,7 +97,7 @@ export function ProjectsDetour() {
                 </ExternalLink>
               </div>
               <p className="portal-note">
-                ↓ keep scrolling — the line continues down from here toward skills &amp; contact
+                ↓ keep scrolling — the line continues down toward skills &amp; contact
               </p>
             </div>
           </article>
